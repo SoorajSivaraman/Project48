@@ -12,7 +12,7 @@ var playIcon, playIconImg, restartIcon, restartIconImg;
 var naarangi1, naarangi2, naarangi3, beerangi1, beerangi2, beerangi3;
 let gemCollectSound, policeSirenSound, naarangiComingSound, beerangiComingSound;
 let explosionSound, gameOverMusic, gamePlayMusic, thrillerBGM, thrillerBGM2, gameWinMusic;
-let bonusSound, restartMusic, bankruptSound, ohNoSound;
+let bonusSound, restartMusic, bankruptSound, ohNoSound, bonusLifeSound;
 var startSprite;
 var startSpriteImg, endBGRDImg, winBGRDImg;
 var startTime = null;
@@ -30,6 +30,7 @@ var naarangiImg, beerangiImg;
 var winTime = 300;
 var bankruptSoundPlayed = false;
 var ohNoSoundPlayed = false;
+var bonusLifeInc = false;
 
 function preload()
 {
@@ -47,6 +48,7 @@ function preload()
   restartMusic = loadSound("SoundFiles/restartMusic.wav");
   bankruptSound = loadSound("SoundFiles/bankruptSound.wav");
   ohNoSound = loadSound("SoundFiles/OhNoSound.wav");
+  bonusLifeSound = loadSound("SoundFiles/bonusLifeSound.wav");
 
   bgrdImg = loadImage("ImageFiles/background.jpg");
   instructionsBGRD = loadImage("ImageFiles/instructionsBGRD.jpg");
@@ -63,12 +65,12 @@ function setup()
   createCanvas(displayWidth, displayHeight);
   bgrd1 = createSprite(displayWidth/2, displayHeight/2, displayWidth, displayHeight);
   bgrd1.addImage(bgrdImg);
-  bgrd1.scale = 2.2;
+  bgrd1.scale = 2.5;
   bgrd1.visible = false;
 
   bgrd2 = createSprite(displayWidth + displayWidth/2, displayHeight/2, displayWidth, displayHeight);
   bgrd2.addImage(bgrdImg);
-  bgrd2.scale = 2.2;
+  bgrd2.scale = 2.5;
   bgrd2.visible = false;
 
   upperInvisible = createSprite(displayWidth/2, 35, displayWidth, 5);
@@ -78,7 +80,7 @@ function setup()
 
   thief = new Thief(displayWidth/10, displayHeight/2 + 300);
 
-  playIcon = createSprite(displayWidth/2 + 150, displayHeight - 230);
+  playIcon = createSprite(displayWidth/2 + 150, displayHeight - 270);
   playIcon.addImage(playIconImg);
   playIcon.scale = 0.3;
 
@@ -96,12 +98,12 @@ function setup()
   choruIntroSprite.scale = 1;
   choruIntroSprite.visible = false;
 
-  naarangiIntroSprite = createSprite(displayWidth/3.5, displayHeight - 130, 20, 20);
+  naarangiIntroSprite = createSprite(displayWidth/3.5, displayHeight - 150, 20, 20);
   naarangiIntroSprite.addImage(naarangiImg);
   naarangiIntroSprite.scale = 0.1;
   naarangiIntroSprite.visible = false;
 
-  beerangiIntroSprite = createSprite(displayWidth/3.5 + 200, displayHeight - 130, 20, 20);
+  beerangiIntroSprite = createSprite(displayWidth/3.5 + 200, displayHeight - 150, 20, 20);
   beerangiIntroSprite.addImage(beerangiImg);
   beerangiIntroSprite.scale = 0.2;
   beerangiIntroSprite.visible = false;
@@ -166,16 +168,16 @@ function gameStart()
   text("BHAAGH  CHORU  BHAAGH !!", displayWidth/3.5, 100);
   textSize(20);
   fill("white");
-  text("* You are a Night-Time Robinhood CHORU who has to escape from the police to earn wealth for the poor.", displayWidth/11, 200);
-  text("* You can use the UP and DOWN Arrow Keys to help CHORU collect a variety of wealth and escape from the \n   POLICE and DEMONS.", displayWidth/11, 265);
-  text("* CHORU has to be beware of the Twin Demons NAARANGI and BEERANGI who steal wealth from CHORU.", displayWidth/11, 350);
-  text("* CHORU has " + lifeCount + " lives to escape from the POLICE.", displayWidth/11, 415);
-  text("* CHORU wins if he escapes from the police for " + winTime + " seconds and earns wealth.", displayWidth/11, 480);
-  text("* Click PLAY Icon to enter CHORU's Night-Time Adventures.", displayWidth/11, 545);
+  text("* You are a Night-Time Robinhood CHORU who has to steal wealth for the poor.", displayWidth/11, 180);
+  text("* You can use the UP and DOWN Arrow Keys to help CHORU Navigate.", displayWidth/11, 245);
+  text("* Beware of the Twin Demons and thieves NAARANGI and BEERANGI.", displayWidth/11, 310);
+  text("* CHORU has " + lifeCount + " lives to escape from the POLICE and gets bonus lives for a good wealth status.", displayWidth/11, 375);
+  text("* CHORU wins if he escapes from the police for " + winTime + " seconds.", displayWidth/11, 440);
+  text("* Click PLAY Icon to enter CHORU's Night-Time Adventures.", displayWidth/11, 505);
   textFont("Matura MT Script Capitals");
   fill("black");
   textSize(32);
-  text("Naarangi & Beerangi Brothers", displayWidth/3.5 - 75, displayHeight - 70);
+  text("Naarangi & Beerangi Brothers", displayWidth/3.5 - 75, displayHeight - 90);
   if(playIcon != null)
   {
     if(mousePressedOver(playIcon))
@@ -212,12 +214,18 @@ function gamePlay(input)
       velocityIncreaseTime = 0;
     }
 
+    if(wealthCount < 5000)
+    {
+      bonusLifeInc = false;
+    }
+
     if(elapsedTime != 0 && elapsedTime % 60 === 0 && ! wealthCountBonus)
     {
       bonusSound.play();
       wealthCountIncTime = elapsedTime;
       wealthCount = wealthCount + 2000;
       wealthCountBonus = true;
+      incrementBonusLifeCount();
     }
 
     if((elapsedTime - wealthCountIncTime) >= 5)
@@ -363,30 +371,35 @@ function gamePlay(input)
       {
         gemCollectSound.play();
         wealthCount = wealthCount + 100;
+        incrementBonusLifeCount();
       }
 
       else if(objectsArray[i].objNum === 2)
       {
         gemCollectSound.play();
         wealthCount = wealthCount + 200;
+        incrementBonusLifeCount();
       }
 
       else if(objectsArray[i].objNum === 3)
       {
         gemCollectSound.play();
         wealthCount = wealthCount + 300;
+        incrementBonusLifeCount();
       }
 
       else if(objectsArray[i].objNum === 4)
       {
         gemCollectSound.play();
         wealthCount = wealthCount + 400;
+        incrementBonusLifeCount();
       }
 
       else if(objectsArray[i].objNum === 5)
       {
         gemCollectSound.play();
         wealthCount = wealthCount + 50;
+        incrementBonusLifeCount();
       }
 
       else if(objectsArray[i].objNum === 6)
@@ -536,7 +549,18 @@ function endStateActions()
     loopedThrillerMusic2 = false;
     ohNoSoundPlayed = false;
     bankruptSoundPlayed = false;
+    bonusLifeInc = false;
     setup();
     gameState = 0;
+  }
+}
+
+function incrementBonusLifeCount()
+{
+  if(bonusLifeInc === false && wealthCount >= 5000)
+  {
+    bonusLifeSound.play();
+    lifeCount = lifeCount + 1;
+    bonusLifeInc = true;
   }
 }
