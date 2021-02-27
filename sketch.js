@@ -31,6 +31,8 @@ var winTime = 300;
 var bankruptSoundPlayed = false;
 var ohNoSoundPlayed = false;
 var bonusLifeInc = false;
+var showBonusLifeText = false;
+var bonusTextShowTime = 0;
 
 function preload()
 {
@@ -245,6 +247,8 @@ function gamePlay(input)
       thrillerBGM.loop();
       loopedThrillerMusic = true;
     }
+    if (keyDown("up")) thief.sprite.velocityY = -15;
+    if (keyDown("down")) thief.sprite.velocityY = 15;
   }
   if(elapsedTime >= 150)
   {
@@ -493,6 +497,20 @@ function gamePlay(input)
       textSize(60);
       text("CHORU ENTERS LEVEL 3 !!", displayWidth/2 - 420, displayHeight/2);
     }
+
+    if(showBonusLifeText)
+    {
+      bonusTextShowTime = elapsedTime;
+      showBonusLifeText = false;
+    }
+
+    if((elapsedTime - bonusTextShowTime <= 2) && bonusTextShowTime != 0)
+    {
+      fill("orange");
+      textFont("Old English Text MT");
+      textSize(60);
+      text("Bonus Life !!", displayWidth/2 - 200, displayHeight/4);
+    }
   }
 }
 
@@ -550,6 +568,8 @@ function endStateActions()
     ohNoSoundPlayed = false;
     bankruptSoundPlayed = false;
     bonusLifeInc = false;
+    showBonusLifeText = false;
+    bonusTextShowTime = 0;
     setup();
     gameState = 0;
   }
@@ -562,5 +582,6 @@ function incrementBonusLifeCount()
     bonusLifeSound.play();
     lifeCount = lifeCount + 1;
     bonusLifeInc = true;
+    showBonusLifeText = true;
   }
 }
